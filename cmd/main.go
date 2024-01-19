@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"junior/internal/db"
 	"junior/internal/handlers"
 	"junior/internal/logger"
 	"net/http"
-	"strconv"
+	// "strconv"
 )
 
 func main() {
@@ -22,10 +22,10 @@ func main() {
 	}
 }
 
-func test() {
-	_, err := strconv.Atoi("")
-	fmt.Println(err)
-}
+// func test() {
+// 	_, err := strconv.Atoi("")
+// 	fmt.Println(err)
+// }
 
 // func testLinks() {
 // 	link := requests.Agify + "Adil"

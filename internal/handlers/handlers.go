@@ -2,10 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
+	"junior/api/requests"
+	"junior/api/structures"
 	"junior/internal/logger"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -34,7 +39,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 	if idString != "" {
 		temp, err := strconv.Atoi(idString)
 		if err != nil {
-			w.Write([]byte("Invalid id"))
+			http.Error(w, "Invalid id value", http.StatusBadRequest)
 			// logger.ErrorLog.Println()
 			return
 		}
@@ -45,7 +50,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		jsonData, err := json.MarshalIndent(data, "", "\t")
 		if err != nil {
 			logger.ErrorLog.Println(err)
-			w.Write([]byte("Internal server error"))
+			http.Error(w, "Error reading request body", http.StatusInternalServerError)
 			return
 		}
 		w.Write(jsonData)
@@ -66,7 +71,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 	if paginationString != "" {
 		temp, err := strconv.Atoi(paginationString)
 		if err != nil {
-			w.Write([]byte("Invalid pagination"))
+			http.Error(w, "Invalid pagination value", http.StatusBadRequest)
 			// logger.ErrorLog.Println()
 			return
 		}
@@ -80,7 +85,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 	if ageFromString != "" {
 		temp, err := strconv.Atoi(ageFromString)
 		if err != nil {
-			w.Write([]byte("Invalid start agef value"))
+			http.Error(w, "Invalid agef value", http.StatusBadRequest)
 			// logger.ErrorLog.Println()
 			return
 		}
@@ -92,7 +97,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 	if ageToString != "" {
 		temp, err := strconv.Atoi(ageToString)
 		if err != nil {
-			w.Write([]byte("Invalid aget value"))
+			http.Error(w, "Invalid aget value", http.StatusBadRequest)
 			// logger.ErrorLog.Println()
 			return
 		}
@@ -111,13 +116,64 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 	data, err := json.MarshalIndent(person, "", "\t")
 	if err != nil {
 		logger.ErrorLog.Println("Error marshaling:", err)
-		w.Write([]byte("Internal server error"))
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
 	}
+
 	w.Write(data)
 }
 
 func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
 
+	var person structures.Person
+
+	if err = json.Unmarshal(body, &person); err != nil {
+		fmt.Println(body) // need to be removed 					<----------------
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		// logger.ErrorLog.Println()
+		return
+	}
+
+	var personFullData structures.PersonFullData
+	personFullData.Person = person
+
+	personFullData = requests.GetPersonInfoAPI(person.Name, person.Surname, person.Patronymic)
+
+	var wg sync.WaitGroup
+	if personFullData.Gender == "" {
+		wg.Add(1)
+		go requests.GetGender(person.Name, &personFullData, &wg)
+	}
+	if personFullData.Age == 0 {
+		wg.Add(1)
+		go requests.GetAge(person.Name, &personFullData, &wg)
+	}
+	if personFullData.Country == "" {
+		wg.Add(1)
+		go requests.GetAge(person.Name, &personFullData, &wg)
+	}
+
+	wg.Wait()
+
+	err = addPersonToDB(h.DB, personFullData)
+	if err != nil {
+		http.Error(w, "Could not add to database", http.StatusInternalServerError)
+		return
+	}
+
+	data, err := json.MarshalIndent(person, "", "\t")
+	if err != nil {
+		logger.ErrorLog.Println("Error marshaling:", err)
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(data)
 }
 
 func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {

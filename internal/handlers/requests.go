@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"junior/api/structures"
 	"junior/internal/logger"
+	"time"
 )
 
 func getById(db *sql.DB, id int) structures.PersonFullData {
@@ -29,7 +31,7 @@ func getPerson(db *sql.DB, limit, pagination, ageF, ageT int, name, gender, coun
 	SELECT ID, Name, Surname, Patronymic, Age, Gender, Country
 	FROM PERSON WHERE 1=1
 	`
-	
+
 	if name != "" {
 		queryDyn += fmt.Sprintf(` AND Name = '%s' `, name)
 	}
@@ -62,4 +64,25 @@ func getPerson(db *sql.DB, limit, pagination, ageF, ageT int, name, gender, coun
 	}
 
 	return people
+}
+
+func addPersonToDB(db *sql.DB, person structures.PersonFullData) error {
+	queryInsert := fmt.Sprintf(`
+	INSERT INTO person (name, surname, patronymic, age, gender, country) VALUES
+  		('%s', '%s', '%s', %d, '%s', '%s') 
+		ON CONFLICT (name, surname, patronymic, age, gender, country) DO NOTHING;
+	`, person.Person.Name, person.Person.Surname, person.Person.Patronymic, person.Age, person.Gender, person.Country)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*7)
+	defer cancel()
+
+	fmt.Println(person.Person)
+	fmt.Println(person)
+
+	_, err := db.ExecContext(ctx, queryInsert)
+	if err != nil {
+		logger.DebugLog.Println("Could not insert into database:", err)
+		return err
+	}
+	return nil
 }
