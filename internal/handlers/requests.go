@@ -27,20 +27,21 @@ func getPerson(db *sql.DB, limit, pagination, ageF, ageT int, name, gender, coun
 	var people []structures.PersonFullData
 	queryDyn := `
 	SELECT ID, Name, Surname, Patronymic, Age, Gender, Country
-	FROM PERSON WHERE 
+	FROM PERSON WHERE 1=1
 	`
+	
 	if name != "" {
-		queryDyn += fmt.Sprintf(` Name = %s `, name)
+		queryDyn += fmt.Sprintf(` AND Name = '%s' `, name)
 	}
-	queryDyn += fmt.Sprintf(` AND Age >= %s `, ageF)
+	queryDyn += fmt.Sprintf(` AND Age >= %d `, ageF)
 	if ageT != 0 {
-		queryDyn += fmt.Sprintf(` AND Age <= %s `, name)
+		queryDyn += fmt.Sprintf(` AND Age <= %d `, ageT)
 	}
 	if gender != "" {
-		queryDyn += fmt.Sprintf(` AND Gender = %s `, gender)
+		queryDyn += fmt.Sprintf(` AND Gender = '%s' `, gender)
 	}
 	if country != "" {
-		queryDyn += fmt.Sprintf(` AND Country = %s `, country)
+		queryDyn += fmt.Sprintf(` AND Country = '%s' `, country)
 	}
 	queryDyn += fmt.Sprintf(` LIMIT %d OFFSET %d`, limit, (pagination-1)*limit)
 

@@ -5,6 +5,10 @@ import (
 	"junior/internal/logger"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func (h Handler) HandleRequest(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +42,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 	if id != 0 {
 		data := getById(h.DB, id)
-		jsonData, err := json.Marshal(data)
+		jsonData, err := json.MarshalIndent(data, "", "\t")
 		if err != nil {
 			logger.ErrorLog.Println(err)
 			w.Write([]byte("Internal server error"))
@@ -69,7 +73,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		pagination = temp
 	}
 
-	name := values.Get("name")
+	name := cases.Title(language.Und).String(values.Get("name"))
 
 	ageFromString := values.Get("agef")
 	var ageF int
@@ -95,16 +99,16 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		ageT = temp
 	}
 
-	gender := values.Get("gender")
+	gender := strings.ToLower(values.Get("gender"))
 	if gender != "male" && gender != "female" {
 		gender = ""
 	}
 
-	country := values.Get("country")
+	country := strings.ToUpper(values.Get("country"))
 
 	person := getPerson(h.DB, limit, pagination, ageF, ageT, name, gender, country)
 
-	data, err := json.Marshal(person)
+	data, err := json.MarshalIndent(person, "", "\t")
 	if err != nil {
 		logger.ErrorLog.Println("Error marshaling:", err)
 		w.Write([]byte("Internal server error"))
