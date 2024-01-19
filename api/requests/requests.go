@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"junior/api/structures"
-	"junior/internal"
+	"junior/internal/logger"
 	"net/http"
 	"sync"
 	"time"
@@ -26,25 +26,25 @@ func GetPersonInfoAPI(name string, surname string, patronymic string) structures
 
 	// req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	// if err != nil {
-	// 	internal.ErrorLog.Println("Creating for person data error: ", err)
+	// 	log.ErrorLog.Println("Creating for person data error: ", err)
 	// 	return personFullData
 	// }
 
 	// resp, err := http.DefaultClient.Do(req)
 	// if err != nil {
-	// 	internal.ErrorLog.Println("Request for person data error: ", err)
+	// 	log.ErrorLog.Println("Request for person data error: ", err)
 	// 	return personFullData
 	// }
 
 	// body, err := io.ReadAll(resp.Body)
 	// if err != nil {
-	// 	internal.ErrorLog.Println("Error reading response.Body: ", err)
+	// 	log.ErrorLog.Println("Error reading response.Body: ", err)
 	// 	return personFullData
 	// }
 
 	// var person structures.Person
 	// if err := json.Unmarshal(body, &person); err != nil {
-	// 	internal.ErrorLog.Println("Error unmarshalling body: ")
+	// 	log.ErrorLog.Println("Error unmarshalling body: ")
 	// 	return personFullData
 	// }
 	var personFullData structures.PersonFullData
@@ -77,24 +77,24 @@ func GetGender(name string, personFullData *structures.PersonFullData, wg *sync.
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
-		internal.ErrorLog.Println("Creating for person data error: ", err)
+		logger.ErrorLog.Println("Creating for person data error: ", err)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		internal.ErrorLog.Println("Request for person data error: ", err)
+		logger.ErrorLog.Println("Request for person data error: ", err)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		internal.ErrorLog.Println("Error reading response.Body: ", err)
+		logger.ErrorLog.Println("Error reading response.Body: ", err)
 		return
 	}
 
 	if err := json.Unmarshal(body, &gender); err != nil {
-		internal.ErrorLog.Println("Error unmarshalling body: ")
+		logger.ErrorLog.Println("Error unmarshalling body: ")
 		return
 	}
 
@@ -116,38 +116,38 @@ func GetNation(name string, personFullData *structures.PersonFullData, wg *sync.
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
-		internal.ErrorLog.Println("Creating for person data error: ", err)
+		logger.ErrorLog.Println("Creating for person data error: ", err)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		internal.ErrorLog.Println("Request for person data error: ", err)
+		logger.ErrorLog.Println("Request for person data error: ", err)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		internal.ErrorLog.Println("Error reading response.Body: ", err)
+		logger.ErrorLog.Println("Error reading response.Body: ", err)
 		return
 	}
 
 	if err := json.Unmarshal(body, &nation); err != nil {
-		internal.ErrorLog.Println("Error unmarshalling body: ")
+		logger.ErrorLog.Println("Error unmarshalling body: ")
 		return
 	}
 
-	var nationality string
+	var country string
 	var MaxProbability float32
 
 	for _, v := range nation.CountryList {
 		if MaxProbability < v.Probability {
 			MaxProbability = v.Probability
-			nationality = v.Country_ID
+			country = v.Country_ID
 		}
 	}
 
-	personFullData.Nationality = nationality
+	personFullData.Country = country
 }
 
 func GetAge(name string, personFullData *structures.PersonFullData, wg *sync.WaitGroup) {
@@ -159,24 +159,24 @@ func GetAge(name string, personFullData *structures.PersonFullData, wg *sync.Wai
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
-		internal.ErrorLog.Println("Creating for person data error: ", err)
+		logger.ErrorLog.Println("Creating for person data error: ", err)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		internal.ErrorLog.Println("Request for person data error: ", err)
+		logger.ErrorLog.Println("Request for person data error: ", err)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		internal.ErrorLog.Println("Error reading response.Body: ", err)
+		logger.ErrorLog.Println("Error reading response.Body: ", err)
 		return
 	}
 
 	if err := json.Unmarshal(body, &age); err != nil {
-		internal.ErrorLog.Println("Error unmarshalling body: ")
+		logger.ErrorLog.Println("Error unmarshalling body: ")
 		return
 	}
 

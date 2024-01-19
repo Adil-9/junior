@@ -1,46 +1,52 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"junior/api/requests"
-	"junior/api/structures"
-	"junior/internal"
+	"junior/internal/db"
+	"junior/internal/handlers"
+	"junior/internal/logger"
 	"net/http"
+	"strconv"
 )
 
 func main() {
-	internal.Init() //creating logger
+	// test()
+	logger.Init() //creating logger
+	db := db.InitDB()
+	handler := handlers.CreateHandler(db)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", HandleRequest)
+	mux.HandleFunc("/", handler.HandleRequest)
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		logger.DebugLog.Fatal(err)
+	}
 }
 
-func HandleRequest(w http.ResponseWriter, r *http.Request) {
-
+func test() {
+	_, err := strconv.Atoi("")
+	fmt.Println(err)
 }
 
-func testLinks() {
-	link := requests.Agify + "Adil"
-	println(link)
+// func testLinks() {
+// 	link := requests.Agify + "Adil"
+// 	println(link)
 
-	req, err := http.NewRequest(http.MethodGet, link, nil)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	var answer structures.PersonAgify
-	json.Unmarshal(body, &answer)
-	fmt.Println(answer)
-}
+// 	req, err := http.NewRequest(http.MethodGet, link, nil)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+// 	resp, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+// 	body, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+// 	var answer structures.PersonAgify
+// 	json.Unmarshal(body, &answer)
+// 	fmt.Println(answer)
+// }
