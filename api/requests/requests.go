@@ -19,7 +19,6 @@ const (
 )
 
 func GetPersonInfoAPI(name string, surname string, patronymic string) structures.PersonFullData {
-	var personFullData structures.PersonFullData
 	// link := "Here should be a link to the api"
 
 	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -48,6 +47,7 @@ func GetPersonInfoAPI(name string, surname string, patronymic string) structures
 	// 	internal.ErrorLog.Println("Error unmarshalling body: ")
 	// 	return personFullData
 	// }
+	var personFullData structures.PersonFullData
 
 	personFullData.Person.Name = name
 	personFullData.Person.Surname = surname
