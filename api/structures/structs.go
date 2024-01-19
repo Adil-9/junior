@@ -1,10 +1,11 @@
 package structures
 
 type PersonFullData struct {
-	Person      Person            `json:"person"`
-	Gender      PersonGenderize   `json:"gender"`
-	Age         PersonAgify       `json:"age"`
-	Nationality PersonNationalize `json:"nationality"`
+	Id          int    `json:"id"`
+	Person      Person `json:"person"`
+	Gender      string `json:"gender"`
+	Age         int    `json:"age"`
+	Nationality string `json:"nationality"`
 }
 
 type Person struct {

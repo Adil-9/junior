@@ -20,34 +20,34 @@ const (
 
 func GetPersonInfoAPI(name string, surname string, patronymic string) structures.PersonFullData {
 	var personFullData structures.PersonFullData
-	link := "Here should be a link to the api"
+	// link := "Here should be a link to the api"
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	// defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
-	if err != nil {
-		internal.ErrorLog.Println("Creating for person data error: ", err)
-		return personFullData
-	}
+	// req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
+	// if err != nil {
+	// 	internal.ErrorLog.Println("Creating for person data error: ", err)
+	// 	return personFullData
+	// }
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		internal.ErrorLog.Println("Request for person data error: ", err)
-		return personFullData
-	}
+	// resp, err := http.DefaultClient.Do(req)
+	// if err != nil {
+	// 	internal.ErrorLog.Println("Request for person data error: ", err)
+	// 	return personFullData
+	// }
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		internal.ErrorLog.Println("Error reading response.Body: ", err)
-		return personFullData
-	}
+	// body, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	internal.ErrorLog.Println("Error reading response.Body: ", err)
+	// 	return personFullData
+	// }
 
-	var person structures.Person
-	if err := json.Unmarshal(body, &person); err != nil {
-		internal.ErrorLog.Println("Error unmarshalling body: ")
-		return personFullData
-	}
+	// var person structures.Person
+	// if err := json.Unmarshal(body, &person); err != nil {
+	// 	internal.ErrorLog.Println("Error unmarshalling body: ")
+	// 	return personFullData
+	// }
 
 	personFullData.Person.Name = name
 	personFullData.Person.Surname = surname
@@ -67,7 +67,9 @@ func GetPersonInfoAPI(name string, surname string, patronymic string) structures
 
 func GetGender(name string, personFullData *structures.PersonFullData, wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	var gender structures.PersonGenderize
+
 	link := fmt.Sprintf("%s%s", Genderize, name)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -96,7 +98,12 @@ func GetGender(name string, personFullData *structures.PersonFullData, wg *sync.
 		return
 	}
 
-	personFullData.Gender = gender
+	if gender.Gender == "male" && gender.Probability < 0.5 {
+		gender.Gender = "female"
+	} else if gender.Gender == "female" && gender.Probability < 0.5 {
+		gender.Gender = "male"
+	}
+	personFullData.Gender = gender.Gender
 }
 
 func GetNation(name string, personFullData *structures.PersonFullData, wg *sync.WaitGroup) {
@@ -130,8 +137,19 @@ func GetNation(name string, personFullData *structures.PersonFullData, wg *sync.
 		return
 	}
 
-	personFullData.Nationality = nation
+	var nationality string
+	var MaxProbability float32
+
+	for _, v := range nation.CountryList {
+		if MaxProbability < v.Probability {
+			MaxProbability = v.Probability
+			nationality = v.Country_ID
+		}
+	}
+
+	personFullData.Nationality = nationality
 }
+
 func GetAge(name string, personFullData *structures.PersonFullData, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var age structures.PersonAgify
@@ -162,5 +180,5 @@ func GetAge(name string, personFullData *structures.PersonFullData, wg *sync.Wai
 		return
 	}
 
-	personFullData.Age = age
+	personFullData.Age = age.Age
 }
