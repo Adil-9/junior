@@ -47,6 +47,7 @@ func GetPersonInfoAPI(name string, surname string, patronymic string) structures
 	// 	log.ErrorLog.Println("Error unmarshalling body: ")
 	// 	return personFullData
 	// }
+
 	var personFullData structures.PersonFullData
 
 	personFullData.Person.Name = name
