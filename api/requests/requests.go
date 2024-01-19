@@ -8,6 +8,7 @@ import (
 	"junior/api/structures"
 	"junior/internal"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -17,7 +18,8 @@ const (
 	Nationalize = "https://api.nationalize.io/?name="
 )
 
-func GetPersonInfoAPI(name string, surname string, patronymic string) {
+func GetPersonInfoAPI(name string, surname string, patronymic string) structures.PersonFullData {
+	var personFullData structures.PersonFullData
 	link := "Here should be a link to the api"
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -26,43 +28,45 @@ func GetPersonInfoAPI(name string, surname string, patronymic string) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
 		internal.ErrorLog.Println("Creating for person data error: ", err)
-		//doiferror
+		return personFullData
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		internal.ErrorLog.Println("Request for person data error: ", err)
-		//doiferror
+		return personFullData
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		internal.ErrorLog.Println("Error reading response.Body: ", err)
-		//doiferror
+		return personFullData
 	}
 
 	var person structures.Person
 	if err := json.Unmarshal(body, &person); err != nil {
 		internal.ErrorLog.Println("Error unmarshalling body: ")
-		//doiferror
+		return personFullData
 	}
-	if person.Name == "" {
-		//doiferror
-		return
-	}
-
-	var personFullData structures.PersonFullData
 
 	personFullData.Person.Name = name
 	personFullData.Person.Surname = surname
 	personFullData.Person.Patronymic = patronymic
 
-	personFullData.Gender = GetGender(name)
-	personFullData.Nationality = GetNation(name)
-	personFullData.Age = GetAge(name)
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	go GetGender(name, &personFullData, &wg)
+	go GetNation(name, &personFullData, &wg)
+	go GetAge(name, &personFullData, &wg)
+
+	wg.Wait()
+
+	return personFullData
 }
 
-func GetGender(name string) structures.PersonGenderize {
+func GetGender(name string, personFullData *structures.PersonFullData, wg *sync.WaitGroup) {
+	defer wg.Done()
 	var gender structures.PersonGenderize
 	link := fmt.Sprintf("%s%s", Genderize, name)
 
@@ -72,30 +76,31 @@ func GetGender(name string) structures.PersonGenderize {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
 		internal.ErrorLog.Println("Creating for person data error: ", err)
-		return gender
+		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		internal.ErrorLog.Println("Request for person data error: ", err)
-		return gender
+		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		internal.ErrorLog.Println("Error reading response.Body: ", err)
-		return gender
+		return
 	}
 
 	if err := json.Unmarshal(body, &gender); err != nil {
 		internal.ErrorLog.Println("Error unmarshalling body: ")
-		return gender
+		return
 	}
 
-	return gender
+	personFullData.Gender = gender
 }
 
-func GetNation(name string) structures.PersonNationalize {
+func GetNation(name string, personFullData *structures.PersonFullData, wg *sync.WaitGroup) {
+	defer wg.Done()
 	var nation structures.PersonNationalize
 	link := fmt.Sprintf("%s%s", Nationalize, name)
 
@@ -105,29 +110,30 @@ func GetNation(name string) structures.PersonNationalize {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
 		internal.ErrorLog.Println("Creating for person data error: ", err)
-		return nation
+		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		internal.ErrorLog.Println("Request for person data error: ", err)
-		return nation
+		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		internal.ErrorLog.Println("Error reading response.Body: ", err)
-		return nation
+		return
 	}
 
 	if err := json.Unmarshal(body, &nation); err != nil {
 		internal.ErrorLog.Println("Error unmarshalling body: ")
-		return nation
+		return
 	}
 
-	return nation
+	personFullData.Nationality = nation
 }
-func GetAge(name string) structures.PersonAgify {
+func GetAge(name string, personFullData *structures.PersonFullData, wg *sync.WaitGroup) {
+	defer wg.Done()
 	var age structures.PersonAgify
 	link := fmt.Sprintf("%s%s", Agify, name)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -136,25 +142,25 @@ func GetAge(name string) structures.PersonAgify {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
 		internal.ErrorLog.Println("Creating for person data error: ", err)
-		return age
+		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		internal.ErrorLog.Println("Request for person data error: ", err)
-		return age
+		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		internal.ErrorLog.Println("Error reading response.Body: ", err)
-		return age
+		return
 	}
 
 	if err := json.Unmarshal(body, &age); err != nil {
 		internal.ErrorLog.Println("Error unmarshalling body: ")
-		return age
+		return
 	}
 
-	return age
+	personFullData.Age = age
 }
