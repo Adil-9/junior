@@ -10,7 +10,7 @@ example:</br><h5>
 "patronymic": "Vasilevich" // необязательно</br>
 }</br></h5>
 </br>
-sends request and returns enriched version of data if no problems encoutered</br>
+sends request and returns and inserts into database enriched version of data if no problems encoutered</br>
 </br>
 <strong>"GET"</strong> - returns all instances of data if no variables were provided</br>
 </br>
