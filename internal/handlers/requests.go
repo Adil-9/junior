@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"junior/api/structures"
 	"junior/internal/logger"
+	"net/http"
 	"time"
 )
 
@@ -23,6 +24,22 @@ func getIfExists(db *sql.DB, name, surname, patronymic, gender, country string, 
 		return false
 	}
 	return true
+}
+
+func changePersonData(db *sql.DB, id int, name, surname, patronymic, gender string, age int, country string) error {
+	query := fmt.Sprintf(`
+	UPDATE person
+	SET name = '%s', surname = '%s', patronymic = '%s', gender = '%s', age = %d, country = '%s' 
+	WHERE id = %d RETURNING *;	
+	`, name, surname, patronymic, gender, age, country, id)
+	row := db.QueryRow(query)
+	var person structures.PersonFullData
+	err := row.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
+	if err != nil {
+		logger.DebugLog.Println("Error retrieving information from data base: ", err)
+		return fmt.Errorf("%s",http.StatusText(http.StatusInternalServerError))
+	}
+	return nil
 }
 
 func deleteById(db *sql.DB, id int) (structures.PersonFullData, error) {

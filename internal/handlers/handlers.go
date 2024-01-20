@@ -80,10 +80,10 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	name := cases.Title(language.Und).String(values.Get("name"))
 
-	ageFromString := values.Get("agef")
+	ageStr := values.Get("agef")
 	var ageF int
-	if ageFromString != "" {
-		temp, err := strconv.Atoi(ageFromString)
+	if ageStr != "" {
+		temp, err := strconv.Atoi(ageStr)
 		if err != nil {
 			http.Error(w, "Invalid agef value", http.StatusBadRequest)
 			// logger.ErrorLog.Println()
@@ -184,6 +184,7 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
 	values := r.URL.Query()
+
 	idString := values.Get("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
@@ -208,5 +209,110 @@ func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
+	values := r.URL.Query()
+	var anyChange bool
+	var id int
+	idString := values.Get("id")
+	if idString != "" {
+		temp, err := strconv.Atoi(idString)
+		if err != nil {
+			http.Error(w, "Invalid id value", http.StatusBadRequest)
+			// logger.ErrorLog.Println()
+			return
+		}
+		id = temp
+	}
+	var person structures.PersonFullData
+	if id != 0 {
+		temp := getById(h.DB, id)
+		if temp.Id != 0 {
+			person = temp
+		} else {
+			http.Error(w, "Incorrect id", http.StatusBadRequest)
+			return
+		}
+	}
 
+	name := cases.Title(language.Und).String(values.Get("name"))
+	if name == "" {
+		name = person.Person.Name
+	} else {
+		person.Person.Name = name
+		anyChange = true
+	}
+
+	surname := cases.Title(language.Und).String(values.Get("surname"))
+	if surname == "" {
+		surname = person.Person.Surname
+	} else {
+		person.Person.Surname = surname
+		anyChange = true
+	}
+
+	patronymic := cases.Title(language.Und).String(values.Get("patronymic"))
+	if patronymic == "" {
+		patronymic = person.Person.Patronymic
+	} else {
+		person.Person.Patronymic = patronymic
+		anyChange = true
+	}
+
+	ageStr := values.Get("age")
+	var age int
+	if ageStr != "" {
+		temp, err := strconv.Atoi(ageStr)
+		if err != nil {
+			http.Error(w, "Invalid age value", http.StatusBadRequest)
+			// logger.ErrorLog.Println()
+			return
+		}
+		if temp == 0 {
+			age = person.Age
+		} else {
+			age = temp
+			person.Age = age
+			anyChange = true
+		}
+	} else {
+		age = person.Age
+	}
+
+	gender := strings.ToLower(values.Get("gender"))
+	if gender != "male" && gender != "female" || gender == "" {
+		gender = person.Gender
+	} else {
+		person.Gender = gender
+		anyChange = true
+	}
+
+	country := strings.ToUpper(values.Get("country"))
+	if country == "" {
+		country = person.Country
+	} else {
+		person.Country = country
+		anyChange = true
+	}
+
+	if !anyChange {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	if exists := getIfExists(h.DB, name, surname, patronymic, gender, country, age); exists {
+		w.Write([]byte("Instance Exist"))
+		return
+	}
+	err := changePersonData(h.DB, id, name, surname, patronymic, gender, age, country)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data, err := json.MarshalIndent(person, "", "\t")
+	if err != nil {
+		logger.ErrorLog.Println("Error marshaling:", err)
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
+	w.Write([]byte("Data changed successfully"))
 }
