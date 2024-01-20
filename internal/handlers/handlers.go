@@ -160,20 +160,26 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	wg.Wait()
 
+	data, err := json.MarshalIndent(person, "", "\t")
+	if err != nil {
+		logger.ErrorLog.Println("Error marshaling:", err) // debug?
+		// http.Error(w, "Internal server error", http.StatusInternalServerError)
+	} else {
+		w.Write(data)
+	}
+
+	personExists := getIfExists(h.DB, personFullData.Person.Name, personFullData.Person.Surname, personFullData.Person.Patronymic, personFullData.Gender, personFullData.Country, personFullData.Age)
+	if personExists {
+		w.Write([]byte("Person instance exist"))
+		return
+	}
+
 	err = addPersonToDB(h.DB, personFullData)
 	if err != nil {
 		http.Error(w, "Could not add to database", http.StatusInternalServerError)
 		return
 	}
-
-	data, err := json.MarshalIndent(person, "", "\t")
-	if err != nil {
-		logger.ErrorLog.Println("Error marshaling:", err)
-		http.Error(w, "Error reading request body", http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(data)
+	// w.Write(data)
 }
 
 func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {

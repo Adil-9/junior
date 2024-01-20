@@ -9,6 +9,22 @@ import (
 	"time"
 )
 
+func getIfExists(db *sql.DB, name, surname, patronymic, gender, country string, age int) bool {
+	var person structures.PersonFullData
+	query := fmt.Sprintf(`
+	SELECT ID, Name, Surname, Patronymic, Age, Gender, Country
+	FROM PERSON
+	WHERE name = '%s' AND surname = '%s' AND patronymic = '%s' AND age = (%d) AND gender = '%s' AND country = '%s';
+	`, name, surname, patronymic, age, gender, country)
+	row := db.QueryRow(query)
+	err := row.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
+	if err != nil {
+		logger.ErrorLog.Println("Error retrieving information from data base: ", err)
+		return false
+	}
+	return true
+}
+
 func getById(db *sql.DB, id int) structures.PersonFullData {
 	var person structures.PersonFullData
 	query := `
@@ -69,8 +85,7 @@ func getPerson(db *sql.DB, limit, pagination, ageF, ageT int, name, gender, coun
 func addPersonToDB(db *sql.DB, person structures.PersonFullData) error {
 	queryInsert := fmt.Sprintf(`
 	INSERT INTO person (name, surname, patronymic, age, gender, country) VALUES
-  		('%s', '%s', '%s', %d, '%s', '%s') 
-		ON CONFLICT (name, surname, patronymic, age, gender, country) DO NOTHING;
+  		('%s', '%s', '%s', %d, '%s', '%s');
 	`, person.Person.Name, person.Person.Surname, person.Person.Patronymic, person.Age, person.Gender, person.Country)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*7)
