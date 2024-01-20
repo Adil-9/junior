@@ -2,7 +2,7 @@ package main
 
 import (
 	// "fmt"
-	"junior/internal/db"
+
 	"junior/internal/handlers"
 	"junior/internal/logger"
 	"net/http"
@@ -12,8 +12,8 @@ import (
 func main() {
 	// test()
 	logger.Init() //creating logger
-	db := db.InitDB()
-	handler := handlers.CreateHandler(db)
+
+	handler := handlers.CreateHandler()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler.HandleRequest)

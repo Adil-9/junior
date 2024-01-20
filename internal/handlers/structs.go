@@ -1,12 +1,16 @@
 package handlers
 
-import "database/sql"
+import (
+	"database/sql"
+	"junior/internal/db"
+)
 
 type Handler struct {
 	DB *sql.DB
 }
 
-func CreateHandler(db *sql.DB) Handler {
+func CreateHandler() Handler {
+	db := db.InitDB()
 	return Handler{
 		DB: db,
 	}
