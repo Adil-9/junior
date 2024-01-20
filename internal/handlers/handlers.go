@@ -183,7 +183,28 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
+	values := r.URL.Query()
+	idString := values.Get("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		http.Error(w, "Incorrect id", http.StatusBadRequest)
+		return
+	}
+	person, err := deleteById(h.DB, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
+	data, err := json.MarshalIndent(person, "", "\t")
+	if err != nil {
+		logger.ErrorLog.Println("Error marshaling:", err) // debug?
+		// http.Error(w, "Internal server error", http.StatusInternalServerError)
+	} else {
+		w.Write(data)
+	}
+
+	w.Write([]byte(fmt.Sprintf("Successfully deleted, id: %d", id)))
 }
 
 func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {

@@ -25,6 +25,34 @@ func getIfExists(db *sql.DB, name, surname, patronymic, gender, country string, 
 	return true
 }
 
+func deleteById(db *sql.DB, id int) (structures.PersonFullData, error) {
+	var person structures.PersonFullData
+
+	personTemp := getById(db, id)
+	if personTemp.Id == 0 {
+		return person, fmt.Errorf("no person instance with such id: %d", id)
+	}
+
+	query := fmt.Sprintf(`
+	DELETE FROM person
+	WHERE id = %d
+	RETURNING *;
+	`, id)
+
+	row, err := db.Query(query)
+	if err != nil {
+		logger.DebugLog.Printf("Could not delete from database id: %d, %v", id, err)
+		return person, fmt.Errorf("internal server error")
+	}
+	err = row.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
+	if err != nil {
+		logger.DebugLog.Println("Error retrieving information from data base: ", err)
+	}
+	return person, nil
+}
+
+// june 18
+
 func getById(db *sql.DB, id int) structures.PersonFullData {
 	var person structures.PersonFullData
 	query := `
