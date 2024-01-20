@@ -1,2 +1,2 @@
-# .gitignore
-server.log 
+.log
+/server.log 
