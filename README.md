@@ -3,12 +3,12 @@
 
 <strong>"POST"</strong>  - takes json with name, surname and patronymic(not necessary) variables </br>
 </br>
-example:</br><h1>
+example:</br><h5>
 {</br>
 "name": "Dmitriy",</br>
 "surname": "Ushakov",</br>
 "patronymic": "Vasilevich" // необязательно</br>
-}</br></h1>
+}</br></h5>
 </br>
 sends request and returns enriched version of data if no problems encoutered</br>
 </br>
