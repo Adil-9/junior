@@ -153,9 +153,6 @@ func addPersonToDB(db *sql.DB, person structures.PersonFullData) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*7)
 	defer cancel()
 
-	fmt.Println(person.Person)
-	fmt.Println(person)
-
 	_, err := db.ExecContext(ctx, queryInsert)
 	if err != nil {
 		logger.DebugLog.Println("Could not insert into database:", err)
