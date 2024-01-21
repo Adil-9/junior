@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -40,7 +39,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(idString)
 		if err != nil {
 			http.Error(w, "Invalid id value", http.StatusBadRequest)
-			// logger.ErrorLog.Println()
+			// logger.DebugLog.Println()
 			return
 		}
 		id = temp
@@ -49,7 +48,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		data := getById(h.DB, id)
 		jsonData, err := json.MarshalIndent(data, "", "\t")
 		if err != nil {
-			logger.ErrorLog.Println(err)
+			logger.DebugLog.Println(err)
 			http.Error(w, "Error reading request body", http.StatusInternalServerError)
 			return
 		}
@@ -72,7 +71,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(paginationString)
 		if err != nil {
 			http.Error(w, "Invalid pagination value", http.StatusBadRequest)
-			// logger.ErrorLog.Println()
+			// logger.DebugLog.Println()
 			return
 		}
 		pagination = temp
@@ -86,7 +85,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(ageStr)
 		if err != nil {
 			http.Error(w, "Invalid agef value", http.StatusBadRequest)
-			// logger.ErrorLog.Println()
+			// logger.DebugLog.Println()
 			return
 		}
 		ageF = temp
@@ -98,7 +97,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(ageToString)
 		if err != nil {
 			http.Error(w, "Invalid aget value", http.StatusBadRequest)
-			// logger.ErrorLog.Println()
+			// logger.DebugLog.Println()
 			return
 		}
 		ageT = temp
@@ -115,7 +114,7 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.MarshalIndent(person, "", "\t")
 	if err != nil {
-		logger.ErrorLog.Println("Error marshaling:", err)
+		logger.DebugLog.Println("Error marshaling:", err)
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
@@ -135,7 +134,7 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 	if err = json.Unmarshal(body, &person); err != nil {
 		fmt.Println(body) // need to be removed 					<----------------
 		http.Error(w, "Bad request", http.StatusBadRequest)
-		// logger.ErrorLog.Println()
+		// logger.DebugLog.Println()
 		return
 	}
 
@@ -144,25 +143,25 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	personFullData = requests.GetPersonInfoAPI(person.Name, person.Surname, person.Patronymic)
 
-	var wg sync.WaitGroup
-	if personFullData.Gender == "" {
-		wg.Add(1)
-		go requests.GetGender(person.Name, &personFullData, &wg)
-	}
-	if personFullData.Age == 0 {
-		wg.Add(1)
-		go requests.GetAge(person.Name, &personFullData, &wg)
-	}
-	if personFullData.Country == "" {
-		wg.Add(1)
-		go requests.GetAge(person.Name, &personFullData, &wg)
-	}
+	// var wg sync.WaitGroup
+	// if personFullData.Gender == "" {
+	// 	wg.Add(1)
+	// 	go requests.GetGender(person.Name, &personFullData, &wg)
+	// }
+	// if personFullData.Age == 0 {
+	// 	wg.Add(1)
+	// 	go requests.GetAge(person.Name, &personFullData, &wg)
+	// }
+	// if personFullData.Country == "" {
+	// 	wg.Add(1)
+	// 	go requests.GetAge(person.Name, &personFullData, &wg)
+	// }
 
-	wg.Wait()
+	// wg.Wait()
 
 	data, err := json.MarshalIndent(person, "", "\t")
 	if err != nil {
-		logger.ErrorLog.Println("Error marshaling:", err) // debug?
+		logger.DebugLog.Println("Error marshaling:", err) // debug?
 		// http.Error(w, "Internal server error", http.StatusInternalServerError)
 	} else {
 		w.Write(data)
@@ -199,7 +198,7 @@ func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.MarshalIndent(person, "", "\t")
 	if err != nil {
-		logger.ErrorLog.Println("Error marshaling:", err) // debug?
+		logger.DebugLog.Println("Error marshaling:", err) // debug?
 		// http.Error(w, "Internal server error", http.StatusInternalServerError)
 	} else {
 		w.Write(data)
@@ -217,7 +216,7 @@ func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(idString)
 		if err != nil {
 			http.Error(w, "Invalid id value", http.StatusBadRequest)
-			// logger.ErrorLog.Println()
+			// logger.DebugLog.Println()
 			return
 		}
 		id = temp
@@ -263,7 +262,7 @@ func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(ageStr)
 		if err != nil {
 			http.Error(w, "Invalid age value", http.StatusBadRequest)
-			// logger.ErrorLog.Println()
+			// logger.DebugLog.Println()
 			return
 		}
 		if temp == 0 {
@@ -309,7 +308,7 @@ func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.MarshalIndent(person, "", "\t")
 	if err != nil {
-		logger.ErrorLog.Println("Error marshaling:", err)
+		logger.DebugLog.Println("Error marshaling:", err)
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}

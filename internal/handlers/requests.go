@@ -17,10 +17,13 @@ func getIfExists(db *sql.DB, name, surname, patronymic, gender, country string, 
 	FROM PERSON
 	WHERE name = '%s' AND surname = '%s' AND patronymic = '%s' AND age = (%d) AND gender = '%s' AND country = '%s';
 	`, name, surname, patronymic, age, gender, country)
-	row := db.QueryRow(query)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	row := db.QueryRowContext(ctx, query)
 	err := row.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
 	if err != nil {
-		logger.ErrorLog.Println("Error retrieving information from data base: ", err)
+		logger.DebugLog.Println("Error retrieving information from data base: ", err)
 		return false
 	}
 	return true
@@ -32,12 +35,16 @@ func changePersonData(db *sql.DB, id int, name, surname, patronymic, gender stri
 	SET name = '%s', surname = '%s', patronymic = '%s', gender = '%s', age = %d, country = '%s' 
 	WHERE id = %d RETURNING *;	
 	`, name, surname, patronymic, gender, age, country, id)
-	row := db.QueryRow(query)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	row := db.QueryRowContext(ctx, query)
 	var person structures.PersonFullData
 	err := row.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
 	if err != nil {
 		logger.DebugLog.Println("Error retrieving information from data base: ", err)
-		return fmt.Errorf("%s",http.StatusText(http.StatusInternalServerError))
+		return fmt.Errorf("%s", http.StatusText(http.StatusInternalServerError))
 	}
 	return nil
 }
@@ -56,7 +63,10 @@ func deleteById(db *sql.DB, id int) (structures.PersonFullData, error) {
 	RETURNING *;
 	`, id)
 
-	row, err := db.Query(query)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	row, err := db.QueryContext(ctx, query)
 	if err != nil {
 		logger.DebugLog.Printf("Could not delete from database id: %d, %v", id, err)
 		return person, fmt.Errorf("internal server error")
@@ -77,10 +87,14 @@ func getById(db *sql.DB, id int) structures.PersonFullData {
 	FROM PERSON
 	WHERE id = ($1);
 	`
-	row := db.QueryRow(query, id)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	row := db.QueryRowContext(ctx, query, id)
 	err := row.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
 	if err != nil {
-		logger.ErrorLog.Println("Error retrieving information from data base: ", err)
+		logger.DebugLog.Println("Error retrieving information from data base: ", err)
 	}
 
 	return person
@@ -108,9 +122,12 @@ func getPerson(db *sql.DB, limit, pagination, ageF, ageT int, name, gender, coun
 	}
 	queryDyn += fmt.Sprintf(` LIMIT %d OFFSET %d`, limit, (pagination-1)*limit)
 
-	rows, err := db.Query(queryDyn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	rows, err := db.QueryContext(ctx, queryDyn)
 	if err != nil {
-		logger.ErrorLog.Println("Error retrieving data from data base: ", err)
+		logger.DebugLog.Println("Error retrieving data from data base: ", err)
 		return people
 	}
 	defer rows.Close()
@@ -119,7 +136,7 @@ func getPerson(db *sql.DB, limit, pagination, ageF, ageT int, name, gender, coun
 		var person structures.PersonFullData
 		err := rows.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
 		if err != nil {
-			logger.ErrorLog.Println("Error retrieving data from data base: ", err)
+			logger.DebugLog.Println("Error retrieving data from data base: ", err)
 		}
 		people = append(people, person)
 	}

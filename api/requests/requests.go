@@ -26,25 +26,25 @@ func GetPersonInfoAPI(name string, surname string, patronymic string) structures
 
 	// req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	// if err != nil {
-	// 	log.ErrorLog.Println("Creating for person data error: ", err)
+	// 	log.DebugLog.Println("Creating for person data error: ", err)
 	// 	return personFullData
 	// }
 
 	// resp, err := http.DefaultClient.Do(req)
 	// if err != nil {
-	// 	log.ErrorLog.Println("Request for person data error: ", err)
+	// 	log.DebugLog.Println("Request for person data error: ", err)
 	// 	return personFullData
 	// }
 
 	// body, err := io.ReadAll(resp.Body)
 	// if err != nil {
-	// 	log.ErrorLog.Println("Error reading response.Body: ", err)
+	// 	log.DebugLog.Println("Error reading response.Body: ", err)
 	// 	return personFullData
 	// }
 
 	// var person structures.Person
 	// if err := json.Unmarshal(body, &person); err != nil {
-	// 	log.ErrorLog.Println("Error unmarshalling body: ")
+	// 	log.DebugLog.Println("Error unmarshalling body: ")
 	// 	return personFullData
 	// }
 
@@ -78,24 +78,24 @@ func GetGender(name string, personFullData *structures.PersonFullData, wg *sync.
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
-		logger.ErrorLog.Println("Creating for person data error: ", err)
+		logger.DebugLog.Println("Creating for person data error: ", err)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		logger.ErrorLog.Println("Request for person data error: ", err)
+		logger.DebugLog.Println("Request for person data error: ", err)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.ErrorLog.Println("Error reading response.Body: ", err)
+		logger.DebugLog.Println("Error reading response.Body: ", err)
 		return
 	}
 
 	if err := json.Unmarshal(body, &gender); err != nil {
-		logger.ErrorLog.Println("Error unmarshalling body: ")
+		logger.DebugLog.Println("Error unmarshalling body: ")
 		return
 	}
 
@@ -117,24 +117,24 @@ func GetNation(name string, personFullData *structures.PersonFullData, wg *sync.
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
-		logger.ErrorLog.Println("Creating for person data error: ", err)
+		logger.DebugLog.Println("Creating for person data error: ", err)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		logger.ErrorLog.Println("Request for person data error: ", err)
+		logger.DebugLog.Println("Request for person data error: ", err)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.ErrorLog.Println("Error reading response.Body: ", err)
+		logger.DebugLog.Println("Error reading response.Body: ", err)
 		return
 	}
 
 	if err := json.Unmarshal(body, &nation); err != nil {
-		logger.ErrorLog.Println("Error unmarshalling body: ")
+		logger.DebugLog.Println("Error unmarshalling body: ")
 		return
 	}
 
@@ -160,24 +160,24 @@ func GetAge(name string, personFullData *structures.PersonFullData, wg *sync.Wai
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
-		logger.ErrorLog.Println("Creating for person data error: ", err)
+		logger.DebugLog.Println("Creating for person data error: ", err)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		logger.ErrorLog.Println("Request for person data error: ", err)
+		logger.DebugLog.Println("Request for person data error: ", err)
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.ErrorLog.Println("Error reading response.Body: ", err)
+		logger.DebugLog.Println("Error reading response.Body: ", err)
 		return
 	}
 
 	if err := json.Unmarshal(body, &age); err != nil {
-		logger.ErrorLog.Println("Error unmarshalling body: ")
+		logger.DebugLog.Println("Error unmarshalling body: ")
 		return
 	}
 
