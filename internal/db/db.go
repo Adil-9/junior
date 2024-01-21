@@ -4,28 +4,30 @@ import (
 	"database/sql"
 	"fmt"
 	"junior/internal/logger"
+	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-// const ( //changeble
-// 	host     = "localhost"
-// 	port     = 3000
-// 	user     = "postgres"
-// 	password = "password"
-// 	dbname   = "junior"
-// )
+func loadEnv() { // load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
 
 func InitDB() *sql.DB {
+	loadEnv()
 
-	host := "localhost"    //os.Getenv("DB_HOST")
-	port := 3000           //os.Getenv("DB_PORT")
-	user := "postgres"     //os.Getenv("DB_USER")
-	password := "password" //os.Getenv("DB_PASSWORD")
-	dbname := "junior"     //os.Getenv("DB_NAME")
-	// sslmode := "disable" os.Getenc("DB_SSL_MODE")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+	sslmode := os.Getenv("DB_SSL_MODE")
 
-	psqlconn := fmt.Sprintf("host= %s port= %d user= %s password=%s dbname= %s sslmode=disable", host, port, user, password, dbname)
+	psqlconn := fmt.Sprintf("host= %s port= %s user= %s password=%s dbname= %s sslmode=%s", host, port, user, password, dbname, sslmode)
 	db, err := sql.Open("postgres", psqlconn)
 	if err != nil {
 		logger.DebugLog.Fatalln(err)
