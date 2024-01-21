@@ -18,12 +18,16 @@ import (
 func (h Handler) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
+		logger.InfoLog.Println("Get request:", r.URL.String(), r.RemoteAddr)
 		h.handleGet(w, r)
 	case http.MethodPost:
+		logger.InfoLog.Println("Post request:", r.URL.String(), r.RemoteAddr)
 		h.handlePost(w, r)
 	case http.MethodDelete:
+		logger.InfoLog.Println("Delete request:", r.URL.String(), r.RemoteAddr)
 		h.handleDelete(w, r)
 	case http.MethodPatch:
+		logger.InfoLog.Println("Patch request:", r.URL.String(), r.RemoteAddr)
 		h.handlePatch(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -120,10 +124,14 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(data)
+	logger.InfoLog.Println("Get response: ", person)
 }
 
 func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
+
 	body, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
@@ -132,11 +140,16 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 	var person structures.Person
 
 	if err = json.Unmarshal(body, &person); err != nil {
-		fmt.Println(body) // need to be removed 					<----------------
+		// fmt.Println(body) // need to be removed 					<----------------
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		// logger.DebugLog.Println()
 		return
 	}
+	if person.Name == "" {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	logger.InfoLog.Println("Post request json:", person, r.RemoteAddr)
 
 	var personFullData structures.PersonFullData
 	personFullData.Person = person
@@ -159,11 +172,12 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	// wg.Wait()
 
-	data, err := json.MarshalIndent(person, "", "\t")
+	data, err := json.MarshalIndent(personFullData, "", "\t")
 	if err != nil {
 		logger.DebugLog.Println("Error marshaling:", err) // debug?
 		// http.Error(w, "Internal server error", http.StatusInternalServerError)
 	} else {
+		logger.InfoLog.Println("Post request json response:", personFullData, r.RemoteAddr)
 		w.Write(data)
 	}
 
@@ -182,6 +196,7 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
+
 	values := r.URL.Query()
 
 	idString := values.Get("id")
@@ -201,6 +216,7 @@ func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
 		logger.DebugLog.Println("Error marshaling:", err) // debug?
 		// http.Error(w, "Internal server error", http.StatusInternalServerError)
 	} else {
+		logger.InfoLog.Println("Delete response:", person, r.RemoteAddr)
 		w.Write(data)
 	}
 
@@ -312,6 +328,7 @@ func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
+	logger.InfoLog.Println("Patch response:", person, r.RemoteAddr)
 	w.Write(data)
 	w.Write([]byte("Data changed successfully"))
 }
