@@ -12,6 +12,8 @@ import (
 func main() {
 	// test()
 	logger.Init() //creating logger
+	logger.InfoLog.Println("Logger created")
+	logger.InfoLog.Println("Starting applicatioin")
 
 	handler := handlers.CreateHandler()
 
@@ -19,6 +21,8 @@ func main() {
 	mux.HandleFunc("/", handler.HandleRequest)
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		logger.DebugLog.Fatal(err)
+	} else {
+		logger.InfoLog.Println("Server running, listening on http://localhost:8080/")
 	}
 }
 
