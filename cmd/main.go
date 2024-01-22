@@ -19,10 +19,10 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler.HandleRequest)
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(":9000", mux); err != nil {
 		logger.DebugLog.Fatal(err)
 	} else {
-		logger.InfoLog.Println("Server running, listening on http://localhost:8080/")
+		logger.InfoLog.Println("Server running, listening on http://localhost:9000/")
 	}
 }
 
