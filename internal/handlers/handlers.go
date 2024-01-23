@@ -131,7 +131,6 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
-
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
@@ -140,7 +139,6 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 	var person structures.Person
 
 	if err = json.Unmarshal(body, &person); err != nil {
-		// fmt.Println(body) // need to be removed 					<----------------
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		// logger.DebugLog.Println()
 		return
@@ -172,27 +170,35 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	// wg.Wait()
 
-	data, err := json.MarshalIndent(personFullData, "", "\t")
-	if err != nil {
-		logger.DebugLog.Println("Error marshaling:", err) // debug?
-		// http.Error(w, "Internal server error", http.StatusInternalServerError)
-	} else {
-		logger.InfoLog.Println("Post request json response:", personFullData, r.RemoteAddr)
-		w.Write(data)
-	}
-
-	personExists := getIfExists(h.DB, personFullData.Person.Name, personFullData.Person.Surname, personFullData.Person.Patronymic, personFullData.Gender, personFullData.Country, personFullData.Age)
+	id, personExists := getIfExists(h.DB, personFullData.Person.Name, personFullData.Person.Surname, personFullData.Person.Patronymic, personFullData.Gender, personFullData.Country, personFullData.Age)
 	if personExists {
+		personFullData = getById(h.DB, id)
+
+		data, err := json.MarshalIndent(personFullData, "", "\t")
+		if err != nil {
+			logger.DebugLog.Println("Error marshaling:", err)
+		} else {
+			w.Write(data)
+		}
 		w.Write([]byte("Person instance exist"))
 		return
 	}
 
-	err = addPersonToDB(h.DB, personFullData)
+	id, err = addPersonToDB(h.DB, personFullData)
 	if err != nil {
 		http.Error(w, "Could not add to database", http.StatusInternalServerError)
 		return
+	} else {
+		personFullData.Id = id
 	}
-	// w.Write(data)
+
+	data, err := json.MarshalIndent(personFullData, "", "\t")
+	if err != nil {
+		logger.DebugLog.Println("Error marshaling:", err)
+	} else {
+		logger.InfoLog.Println("Post request json response:", personFullData, r.RemoteAddr)
+		w.Write(data)
+	}
 }
 
 func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -312,7 +318,7 @@ func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	if exists := getIfExists(h.DB, name, surname, patronymic, gender, country, age); exists {
+	if _, exists := getIfExists(h.DB, name, surname, patronymic, gender, country, age); exists {
 		w.Write([]byte("Instance Exist"))
 		return
 	}

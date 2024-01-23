@@ -8,7 +8,9 @@ import (
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -28,64 +30,33 @@ func InitDB() *sql.DB {
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
 	sslmode := os.Getenv("DB_SSL_MODE")
+	
+	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, password, host, port, dbname, sslmode)
 
-	psqlconn := fmt.Sprintf("host= %s port= %s user= %s password=%s dbname= %s sslmode=%s", host, port, user, password, dbname, sslmode)
-	db, err := sql.Open("postgres", psqlconn)
+	err := migrateDatabase(url)
 	if err != nil {
 		logger.DebugLog.Fatalln(err)
 	}
 
-	err = createTables(db)
+	db, err := sql.Open("postgres", url)
 	if err != nil {
 		logger.DebugLog.Fatalln(err)
 	}
+
 	logger.InfoLog.Println("Connected to database")
 	return db
 }
 
-// func createTables(db *sql.DB) error {
-// 	query := `
-// 		CREATE TABLE IF NOT EXISTS person (
-// 			id SERIAL PRIMARY KEY,
-// 			name TEXT NOT NULL,
-// 			surname TEXT NOT NULL,
-// 			patronymic TEXT NOT NULL,
-// 			age INTEGER NOT NULL,
-// 			gender TEXT NOT NULL,
-// 			country TEXT NOT NULL
-// 		);
-// 	`
-// 	if _, err := db.Exec(query); err != nil {
-// 		return err
-// 	}
-// 	logger.InfoLog.Println("Created tables in database")
-// 	return nil
-// }
-
-func createTables(db *sql.DB) error {
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
+func migrateDatabase(url string) error {
+	// postgres://postgres:password@postgres:5432/postgres?sslmode=disable
+	m, err := migrate.New(
+		"file://migration",
+		url)
 	if err != nil {
-		logger.ErrorLog.Fatal(err)
 		return err
 	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"migration", // Path to your migration files
-		"postgres",  // Database driver name
-		driver,
-	)
-	if err != nil {
-		fmt.Println(err)
-		logger.ErrorLog.Fatal(err)
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return err
 	}
-
-	err = m.Up()
-	if err != nil && err != migrate.ErrNoChange {
-		logger.ErrorLog.Fatal(err)
-		return err
-	}
-
-	fmt.Println("Migrations applied successfully!")
 	return nil
 }

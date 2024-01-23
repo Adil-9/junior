@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func getIfExists(db *sql.DB, name, surname, patronymic, gender, country string, age int) bool {
+func getIfExists(db *sql.DB, name, surname, patronymic, gender, country string, age int) (int, bool) {
 	var person structures.PersonFullData
 	query := fmt.Sprintf(`
 	SELECT ID, Name, Surname, Patronymic, Age, Gender, Country
@@ -24,9 +24,9 @@ func getIfExists(db *sql.DB, name, surname, patronymic, gender, country string, 
 	err := row.Scan(&person.Id, &person.Person.Name, &person.Person.Surname, &person.Person.Patronymic, &person.Age, &person.Gender, &person.Country)
 	if err != nil {
 		logger.DebugLog.Println("Error retrieving information from data base: ", err)
-		return false
+		return 0, false
 	}
-	return true
+	return person.Id, true
 }
 
 func changePersonData(db *sql.DB, id int, name, surname, patronymic, gender string, age int, country string) error {
@@ -144,19 +144,24 @@ func getPerson(db *sql.DB, limit, pagination, ageF, ageT int, name, gender, coun
 	return people
 }
 
-func addPersonToDB(db *sql.DB, person structures.PersonFullData) error {
+func addPersonToDB(db *sql.DB, person structures.PersonFullData) (int, error) {
+	var id int
+
 	queryInsert := fmt.Sprintf(`
 	INSERT INTO person (name, surname, patronymic, age, gender, country) VALUES
-  		('%s', '%s', '%s', %d, '%s', '%s');
+  		('%s', '%s', '%s', %d, '%s', '%s')
+		RETURNING id;
 	`, person.Person.Name, person.Person.Surname, person.Person.Patronymic, person.Age, person.Gender, person.Country)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*7)
 	defer cancel()
 
-	_, err := db.ExecContext(ctx, queryInsert)
+	row := db.QueryRowContext(ctx, queryInsert)
+	err := row.Scan(&id)
 	if err != nil {
 		logger.DebugLog.Println("Could not insert into database:", err)
-		return err
+		return id, err
 	}
-	return nil
+
+	return id, nil
 }
