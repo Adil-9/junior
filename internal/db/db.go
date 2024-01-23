@@ -89,23 +89,3 @@ func createTables(db *sql.DB) error {
 	fmt.Println("Migrations applied successfully!")
 	return nil
 }
-
-// func OpenSqliteDB(dbName string) *sql.DB {
-// 	db, err := sql.Open("sqlite3", fmt.Sprintf("./%s", dbName))
-// 	if err != nil {
-// 		logger.DebugLog.Fatal(err)
-// 		return nil
-// 	}
-
-// 	if err = db.Ping(); err != nil {
-// 		logger.DebugLog.Fatal(err)
-// 		return nil
-// 	}
-
-// 	if err = createTables(db); err != nil {
-// 		logger.DebugLog.Fatal(err)
-// 		return nil
-// 	}
-
-// 	return db
-// }
