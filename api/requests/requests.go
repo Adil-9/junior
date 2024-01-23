@@ -89,6 +89,7 @@ func GetGender(name string, personFullData *structures.PersonFullData, wg *sync.
 	}
 
 	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		logger.DebugLog.Println("Error reading response.Body: ", err)
 		return
@@ -128,6 +129,7 @@ func GetNation(name string, personFullData *structures.PersonFullData, wg *sync.
 	}
 
 	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		logger.DebugLog.Println("Error reading response.Body: ", err)
 		return
@@ -171,6 +173,7 @@ func GetAge(name string, personFullData *structures.PersonFullData, wg *sync.Wai
 	}
 
 	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		logger.DebugLog.Println("Error reading response.Body: ", err)
 		return
