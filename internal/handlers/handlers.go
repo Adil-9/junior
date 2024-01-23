@@ -89,7 +89,6 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(ageStr)
 		if err != nil {
 			http.Error(w, "Invalid agef value", http.StatusBadRequest)
-			// logger.DebugLog.Println()
 			return
 		}
 		ageF = temp
@@ -101,7 +100,6 @@ func (h Handler) handleGet(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(ageToString)
 		if err != nil {
 			http.Error(w, "Invalid aget value", http.StatusBadRequest)
-			// logger.DebugLog.Println()
 			return
 		}
 		ageT = temp
@@ -140,7 +138,6 @@ func (h Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.Unmarshal(body, &person); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
-		// logger.DebugLog.Println()
 		return
 	}
 	if person.Name == "" {
@@ -213,14 +210,13 @@ func (h Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	person, err := deleteById(h.DB, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	data, err := json.MarshalIndent(person, "", "\t")
 	if err != nil {
-		logger.DebugLog.Println("Error marshaling:", err) // debug?
-		// http.Error(w, "Internal server error", http.StatusInternalServerError)
+		logger.DebugLog.Println("Error marshaling:", err)
 	} else {
 		logger.InfoLog.Println("Delete response:", person, r.RemoteAddr)
 		w.Write(data)
@@ -238,7 +234,6 @@ func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(idString)
 		if err != nil {
 			http.Error(w, "Invalid id value", http.StatusBadRequest)
-			// logger.DebugLog.Println()
 			return
 		}
 		id = temp
@@ -284,7 +279,6 @@ func (h Handler) handlePatch(w http.ResponseWriter, r *http.Request) {
 		temp, err := strconv.Atoi(ageStr)
 		if err != nil {
 			http.Error(w, "Invalid age value", http.StatusBadRequest)
-			// logger.DebugLog.Println()
 			return
 		}
 		if temp == 0 {
