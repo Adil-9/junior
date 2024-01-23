@@ -11,12 +11,13 @@ example:</br><h5>
 }</br></h5>
 </br>
 sends request and returns and inserts into database enriched version of data if no problems encoutered</br>
+in case the instance already exists, return the enriched vesion of instance with "instance exist" respond <br>
 </br>
 <strong>"GET"</strong> - returns all instances of data if no variables were provided</br>
 </br>
 With variables provided return data filtered depending on the variables.</br>
 </br>
-Variables are: <em>"name:, "surname", "patronymic", "agef", "aget", "gender", "country", "limit", "pagination" </em></br>
+Variables are: <em> "id", "name:, "surname", "patronymic", "agef", "aget", "gender", "country", "limit", "pagination" </em></br>
 </br>
 <i>`name, surname, patronymic, gender, country`</i> -filters data returning instances with provided variables</br>
 </br>
@@ -29,3 +30,7 @@ Variables are: <em>"name:, "surname", "patronymic", "agef", "aget", "gender", "c
 <strong>"DELETE"</strong> - deletes instance with provided id </br>
 </br>
 <strong>"PATCH"</strong> - changes instance of data with provided variables (takes same variables as in "GET" except agef, aget, limit, pagination, instead uses "age".</br>
+
+docker-compose file listening on localhost:9000 <br>
+initially no data is in database
+<string>the app container might not run when docker-compose due to postgres database not being unfolded in time, so it should be rerun, the app contains time.sleep for 5 seconds for this purpose (it is done this way to ease the docker program) </strong>
