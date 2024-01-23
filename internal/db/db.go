@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -41,22 +43,50 @@ func InitDB() *sql.DB {
 	return db
 }
 
+// func createTables(db *sql.DB) error {
+// 	query := `
+// 		CREATE TABLE IF NOT EXISTS person (
+// 			id SERIAL PRIMARY KEY,
+// 			name TEXT NOT NULL,
+// 			surname TEXT NOT NULL,
+// 			patronymic TEXT NOT NULL,
+// 			age INTEGER NOT NULL,
+// 			gender TEXT NOT NULL,
+// 			country TEXT NOT NULL
+// 		);
+// 	`
+// 	if _, err := db.Exec(query); err != nil {
+// 		return err
+// 	}
+// 	logger.InfoLog.Println("Created tables in database")
+// 	return nil
+// }
+
 func createTables(db *sql.DB) error {
-	query := `
-		CREATE TABLE IF NOT EXISTS person (
-			id SERIAL PRIMARY KEY,
-			name TEXT NOT NULL,
-			surname TEXT NOT NULL,
-			patronymic TEXT NOT NULL,
-			age INTEGER NOT NULL,
-			gender TEXT NOT NULL,
-			country TEXT NOT NULL
-		);	
-	`
-	if _, err := db.Exec(query); err != nil {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		logger.ErrorLog.Fatal(err)
 		return err
 	}
-	logger.InfoLog.Println("Created tables in database")
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"migration", // Path to your migration files
+		"postgres",  // Database driver name
+		driver,
+	)
+	if err != nil {
+		fmt.Println(err)
+		logger.ErrorLog.Fatal(err)
+		return err
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		logger.ErrorLog.Fatal(err)
+		return err
+	}
+
+	fmt.Println("Migrations applied successfully!")
 	return nil
 }
 
