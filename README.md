@@ -34,3 +34,6 @@ Variables are: <em> "id", "name:, "surname", "patronymic", "agef", "aget", "gend
 docker-compose file listening on localhost:9000 <br>
 initially no data is in database
 <string>the app container might not run when docker-compose due to postgres database not being unfolded in time, so it should be rerun, the app contains time.sleep for 5 seconds for this purpose (it is done this way to ease the docker program) </strong>
+
+
+<h3>To run the program `docker-compose up` then http://localhost:9000 <h3>
