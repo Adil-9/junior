@@ -19,34 +19,6 @@ const (
 )
 
 func GetPersonInfoAPI(name string, surname string, patronymic string) structures.PersonFullData {
-	// link := "Here should be a link to the api"
-
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	// defer cancel()
-
-	// req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
-	// if err != nil {
-	// 	log.DebugLog.Println("Creating for person data error: ", err)
-	// 	return personFullData
-	// }
-
-	// resp, err := http.DefaultClient.Do(req)
-	// if err != nil {
-	// 	log.DebugLog.Println("Request for person data error: ", err)
-	// 	return personFullData
-	// }
-
-	// body, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	log.DebugLog.Println("Error reading response.Body: ", err)
-	// 	return personFullData
-	// }
-
-	// var person structures.Person
-	// if err := json.Unmarshal(body, &person); err != nil {
-	// 	log.DebugLog.Println("Error unmarshalling body: ")
-	// 	return personFullData
-	// }
 
 	var personFullData structures.PersonFullData
 
